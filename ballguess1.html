@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ball Guessing Game</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
+  body {
+    background-color: #b22222;
+    font-family: 'Poppins', Arial, sans-serif;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 30px 20px 60px;
+    user-select: none;
+  }
+
+  h1 {
+    font-weight: 700;
+    font-size: 3rem;
+    margin-bottom: 25px;
+    letter-spacing: 1.4px;
+    text-shadow:
+      0 0 8px #ff5c5c,
+      0 0 15px #ff5c5caa;
+  }
+
+  #game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0,0,0,0.3);
+    box-shadow:
+      0 0 15px #ff3b3bdd,
+      inset 0 0 25px #ff4a4aaa;
+    padding: 30px 40px 60px;
+    border-radius: 25px;
+    width: 420px;
+    position: relative;
+  }
+
+  #difficulty {
+    margin-bottom: 30px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  #difficulty label {
+    margin-right: 12px;
+    display: inline-block;
+  }
+  #difficulty-select {
+    padding: 6px 12px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    border: none;
+    background: #5d1a1a;
+    color: #ff9999;
+    font-weight: 600;
+    box-shadow:
+      0 0 6px #ff4d4daa;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  #difficulty-select:hover, #difficulty-select:focus {
+    background: #7b2222;
+    color: #fff1f1;
+    outline: none;
+  }
+
+  #cups {
+    position: relative;
+    width: 390px;
+    height: 190px;
+    margin-bottom: 30px;
+    user-select: none;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.4), transparent 80%);
+    border-radius: 30px;
+    box-shadow:
+      inset 0 8px 20px rgba(255,0,0,0.5),
+      0 14px 30px rgba(139,0,0,0.7);
+  }
+
+  .cup {
+    position: absolute;
+    width: 110px;
+    height: 170px;
+    border-radius: 30% 30% 25% 25% / 60% 60% 40% 40%;
+    background: linear-gradient(145deg, #5c0d0d, #a42f2f);
+    box-shadow:
+      0 8px 9px rgba(255,115,115,0.5),
+      inset 0 2px 8px #e55c5c,
+      inset 0 -5px 15px #6b1010;
+    cursor: pointer;
+    transition:
+      box-shadow 0.3s ease,
+      transform 0.3s ease,
+      border-color 0.3s ease;
+    border: 3px solid transparent;
+    box-sizing: border-box;
+  }
+  .cup:hover {
+    transform: translateY(-12px) scale(1.07);
+    box-shadow:
+      0 20px 30px rgba(255, 92, 92, 0.8),
+      inset 0 5px 18px #ff6161,
+      inset 0 -8px 25px #8b1616;
+    border-color: #ff5c5c;
+  }
+  .cup:focus {
+    outline: none;
+    border-color: #ff7f7f;
+    box-shadow:
+      0 20px 35px rgba(255, 92, 92, 1),
+      inset 0 7px 20px #ff7a7a,
+      inset 0 -8px 25px #9b1a1a;
+    transform: translateY(-12px) scale(1.1);
+  }
+
+  .ball {
+    width: 38px;
+    height: 38px;
+    background: radial-gradient(circle at center, #fff47f, #ffdb2e);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    box-shadow:
+      0 0 10px 5px #fff77f,
+      0 0 18px 9px #ffdb2eaa;
+    pointer-events: none;
+  }
+
+  button {
+    font-family: 'Poppins', Arial, sans-serif;
+    padding: 14px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background-color: #440202;
+    border: 3px solid #ff5c5c;
+    color: #ff8b8b;
+    border-radius: 12px;
+    box-shadow:
+      0 0 15px #ff5c5caa;
+    transition: 
+      background-color 0.3s ease,
+      color 0.3s ease,
+      box-shadow 0.3s ease;
+    user-select: none;
+  }
+  button:hover:not(:disabled) {
+    background-color: #ff5c5c;
+    color: #440202;
+    box-shadow:
+      0 0 25px #ff9393,
+      0 0 40px #ff5c5cdd;
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+
+  #result {
+    font-size: 1.9rem;
+    min-height: 45px;
+    margin-top: 8px;
+    text-align: center;
+    font-weight: 700;
+    text-shadow:
+      0 0 7px #ffe57f,
+      0 0 15px #ffe57fbb;
+  }
+  .stars {
+    margin-top: 15px;
+    color: #ffd400;
+    font-size: 2.8rem;
+    user-select: none;
+    animation: starsIn 0.8s ease forwards;
+  }
+  @keyframes starsIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Music controls */
+  #music-controls {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  #music-controls button {
+    font-size: 1rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 2px solid #ff5c5c;
+    background-color: #440202;
+    color: #ff8b8b;
+    box-shadow:
+      0 0 12px #ff5c5caa;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  #music-controls button:hover {
+    background-color: #ff5c5c;
+    color: #440202;
+    box-shadow:
+      0 0 18px #ff9393,
+      0 0 30px #ff5c5cdd;
+  }
+  #music-controls input[type="range"] {
+    width: 130px;
+    cursor: pointer;
+    accent-color: #ff5c5c;
+  }
+</style>
+</head>
+<body>
+  <h1>Ball Guessing Game</h1>
+  <div id="game-container" aria-live="polite" class="cups-focused">
+    <div id="difficulty">
+      <label for="difficulty-select">Select Difficulty: </label>
+      <select id="difficulty-select" aria-label="Select difficulty level">
+        <option value="easy">Easy</option>
+        <option value="normal" selected>Normal</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+        <option value="expert">Expert</option>
+        <option value="impossible">Impossible</option>
+      </select>
+    </div>
+    <div id="cups" role="group" aria-label="Cups">
+      <div class="cup" id="cup0" tabindex="0" aria-label="Cup 1" role="button" aria-pressed="false"></div>
+      <div class="cup" id="cup1" tabindex="0" aria-label="Cup 2" role="button" aria-pressed="false"></div>
+      <div class="cup" id="cup2" tabindex="0" aria-label="Cup 3" role="button" aria-pressed="false"></div>
+    </div>
+    <button id="start-button" aria-live="assertive">Start Game</button>
+    <div id="result" aria-live="polite"></div>
+    <div id="stars" class="stars" aria-label="Stars earned"></div>
+    <div id="music-controls">
+      <button id="play-pause-music" aria-label="Play or pause soothing music" aria-pressed="false">Play Music</button>
+      <label for="music-volume" style="user-select:none;">Volume</label>
+      <input type="range" id="music-volume" min="0" max="1" step="0.01" value="0.2" aria-label="Music volume control" />
+    </div>
+  </div>
+
+  <audio id="background-music" loop preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/28/audio_00e5a487eb.mp3?filename=relaxing-ambient-11141.mp3"></audio>
+
+<script>
+  (() => {
+    const cupCount = 3;
+    const cupPositions = [0, 130, 260];
+    const cups = [];
+    for(let i = 0; i < cupCount; i++){
+      const cup = document.getElementById('cup' + i);
+      cup.style.left = cupPositions[i] + 'px';
+      cups.push({
+        element: cup,
+        positionIndex: i,
+        ball: null,
+      });
+    }
+
+    for (let i = 0; i < cupCount; i++) {
+      const ball = document.createElement('div');
+      ball.classList.add('ball');
+      cups[i].element.appendChild(ball);
+      cups[i].ball = ball;
+    }
+
+    let ballPositionIndex = 0;
+    let mixing = false;
+
+    const difficultySpeeds = {
+      easy: 2500,
+      normal: 1500,
+      medium: 1000,
+      hard: 700,
+      expert: 400,
+      impossible: 0,
+    };
+    const startBtn = document.getElementById('start-button');
+    const difficultySelect = document.getElementById('difficulty-select');
+    const resultEl = document.getElementById('result');
+    const starsEl = document.getElementById('stars');
+
+    function hideAllBalls(){
+      for(const c of cups){
+        c.ball.style.display = 'none';
+      }
+    }
+
+    function showBallBriefly(positionIndex){
+      hideAllBalls();
+      // Show only if not impossible difficulty
+      if(difficultySelect.value === 'impossible') return;
+      const cup = cups.find(c => c.positionIndex === positionIndex);
+      if(cup){
+        cup.ball.style.display = 'block';
+        setTimeout(() => {
+          cup.ball.style.display = 'none';
+        }, 800);
+      }
+    }
+    function showBallFinal(positionIndex){
+      hideAllBalls();
+      // Show only if not impossible difficulty
+      if(difficultySelect.value === 'impossible') return;
+      const cup = cups.find(c => c.positionIndex === positionIndex);
+      if(cup){
+        cup.ball.style.display = 'block';
+      }
+    }
+
+    function disableCupClicks(){
+      cups.forEach(c => {
+        c.element.style.cursor = 'default';
+        c.element.setAttribute('aria-pressed', 'false');
+        c.element.removeEventListener('click', onCupClick);
+        c.element.removeEventListener('keydown', onCupKeyDown);
+      });
+    }
+    function enableCupClicks(){
+      cups.forEach(c => {
+        c.element.style.cursor = 'pointer';
+        c.element.addEventListener('click', onCupClick);
+        c.element.addEventListener('keydown', onCupKeyDown);
+      });
+    }
+    function onCupKeyDown(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        e.currentTarget.click();
+      }
+    }
+    function animateSwap(i, j){
+      return new Promise((resolve) => {
+        const cupA = cups[i];
+        const cupB = cups[j];
+        const leftA = cupPositions[cupA.positionIndex];
+        const leftB = cupPositions[cupB.positionIndex];
+
+        cupA.element.style.transition = 'left 0.6s ease';
+        cupB.element.style.transition = 'left 0.6s ease';
+
+        cupA.element.style.left = leftB + 'px';
+        cupB.element.style.left = leftA + 'px';
+
+        setTimeout(() => {
+          const tempPos = cupA.positionIndex;
+          cupA.positionIndex = cupB.positionIndex;
+          cupB.positionIndex = tempPos;
+
+          cupA.element.style.transition = '';
+          cupB.element.style.transition = '';
+
+          cupA.element.style.left = cupPositions[cupA.positionIndex] + 'px';
+          cupB.element.style.left = cupPositions[cupB.positionIndex] + 'px';
+
+          resolve();
+        }, 610);
+      });
+    }
+
+    async function shuffleCups(speed, times){
+      mixing = true;
+      disableCupClicks();
+
+      for (let n = 0; n < times; n++) {
+        let i = Math.floor(Math.random() * cupCount);
+        let j = i;
+        while(j === i) j = Math.floor(Math.random() * cupCount);
+
+        await animateSwap(i, j);
+
+        if(ballPositionIndex === cups[i].positionIndex) ballPositionIndex = cups[j].positionIndex;
+        else if(ballPositionIndex === cups[j].positionIndex) ballPositionIndex = cups[i].positionIndex;
+
+        await new Promise(res => setTimeout(res, speed - 600));
+      }
+      mixing = false;
+      enableCupClicks();
+      startBtn.disabled = false;
+    }
+
+    function onCupClick(e){
+      if(mixing) return;
+      disableCupClicks();
+      const clickedElem = e.currentTarget;
+      const cupObj = cups.find(c => c.element === clickedElem);
+      if(!cupObj) return;
+      const guessPos = cupObj.positionIndex;
+
+      const difficulty = difficultySelect.value;
+      const correct = (guessPos === ballPositionIndex);
+
+      showBallFinal(ballPositionIndex);
+
+      if(difficulty === 'impossible'){
+        // Never show ball in impossible mode, so hide all balls now
+        hideAllBalls();
+      }
+
+      if(correct){
+        resultEl.textContent = 'Correct! You found the ball!';
+      } else {
+        resultEl.textContent = `Wrong! The ball was under cup ${ballPositionIndex + 1}.`;
+      }
+      starsEl.textContent = getStars(difficulty, correct);
+      startBtn.disabled = false;
+    }
+
+    function getStars(diff, correct){
+      if(!correct) return '';
+      switch(diff){
+        case 'easy': return '⭐⭐⭐';
+        case 'normal': return '⭐⭐⭐';
+        case 'medium': return '⭐⭐';
+        case 'hard': return '⭐⭐';
+        case 'expert': return '⭐';
+        case 'impossible': return '⭐⭐⭐';
+        default: return '';
+      }
+    }
+
+    function resetGame(){
+      hideAllBalls();
+      disableCupClicks();
+      resultEl.textContent = '';
+      starsEl.textContent = '';
+      startBtn.disabled = false;
+      mixing = false;
+
+      for(let i = 0; i < cupCount; i++){
+        cups[i].positionIndex = i;
+        cups[i].element.style.transition = '';
+        cups[i].element.style.left = cupPositions[i] + 'px';
+      }
+    }
+
+    async function startGame(){
+      resetGame();
+      const difficulty = difficultySelect.value;
+      startBtn.disabled = true;
+      ballPositionIndex = Math.floor(Math.random() * cupCount);
+
+      // Show ball briefly before mixing for non-impossible diffs
+      if(difficulty !== 'impossible'){
+        showBallBriefly(ballPositionIndex);
+      }
+
+      if(difficulty === 'impossible'){
+        enableCupClicks();
+        mixing = false;
+        startBtn.disabled = false;
+        resultEl.textContent = 'Pure guess! The ball is hidden.';
+        starsEl.textContent = '';
+        return;
+      }
+
+      let shuffleSpeed = difficultySpeeds[difficulty] || difficultySpeeds.normal;
+      let shuffleTimes = 0;
+      switch(difficulty){
+        case 'easy': shuffleTimes = 5; break;
+        case 'normal': shuffleTimes = 10; break;
+        case 'medium': shuffleTimes = 15; break;
+        case 'hard': shuffleTimes = 20; break;
+        case 'expert': shuffleTimes = 25; break;
+        default: shuffleTimes = 10; break;
+      }
+
+      resultEl.textContent = 'Mixing cups...';
+      starsEl.textContent = '';
+
+      await new Promise(r => setTimeout(r, 900));
+
+      await shuffleCups(shuffleSpeed, shuffleTimes);
+
+      resultEl.textContent = 'Guess where the ball is!';
+    }
+
+    // Music controls and playback
+    const music = document.getElementById('background-music');
+    const playPauseBtn = document.getElementById('play-pause-music');
+    const volSlider = document.getElementById('music-volume');
+
+    playPauseBtn.addEventListener('click', () => {
+      if(music.paused){
+        music.play().then(() => {
+          playPauseBtn.textContent = 'Pause Music';
+          playPauseBtn.setAttribute('aria-pressed', 'true');
+        }).catch(() => {
+          // Autoplay prevented
+        });
+      } else {
+        music.pause();
+        playPauseBtn.textContent = 'Play Music';
+        playPauseBtn.setAttribute('aria-pressed', 'false');
+      }
+    });
+
+    volSlider.addEventListener('input', () => {
+      music.volume = volSlider.value;
+      volSlider.setAttribute('aria-valuenow', volSlider.value);
+    });
+
+    function initialize() {
+      disableCupClicks();
+      startBtn.addEventListener('click', startGame);
+      cups.forEach(cup => {
+        cup.element.addEventListener('click', onCupClick);
+        cup.element.addEventListener('keydown', e => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            cup.element.click();
+          }
+        });
+      });
+      // Set initial volume
+      music.volume = volSlider.value;
+    }
+
+    initialize();
+    
+  })();
+</script>
+</body>
+</html>
